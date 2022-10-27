@@ -1,9 +1,3 @@
-/*
-Integrantes:
-Jonathan Josué Fuentes Ramírez A01661894
-Alejandro Pozos Aguirre        A01656017
-*/
-
 // <!> README
 // Para seleccionar una base de datos particular, ingresar las siguientes
 // instrucciones en terminal:
@@ -69,58 +63,75 @@ void makeList(LinkedList<Pizza> &pizzas, string archivo) {
     // Hacer una pizza temporal...
     Pizza pizzaTemp(id, pizza, tamanho, extra, precio);
     pizzas.addLast(pizzaTemp);
-    cout << pizzaTemp << endl;
   }
   fin.close();
 }
 
 // Leyendo el documento de usuarios
-void login(string documento, string usuario, string password) {
-  // O(1)
-  LinkedList<string> users;
-  LinkedList<string> pins;
-
-  ifstream file(documento);     // O(1)
-  string line;                  // O(1)
-  char delimit = ',';           // O(1)
-  while (getline(file, line)) { // O(n)
-    stringstream stream(line);  // O(1)
-    string user, pin;
-    getline(stream, user, delimit);
-    getline(stream, pin, delimit);
-
-    users.addLast(user);
-    pins.addLast(pin);
+void readUsers(string documento, LinkedList<string> &users,
+               LinkedList<string> &pins) {
+  ifstream fin;
+  fin.open(documento);
+  // Error en caso de no poder abrir el archivo o no encontrarlo
+  if (fin.fail()) { // O(n)
+    cout << "ERROR: Failed to open file ";
+    throw -1;
   }
+  // Variables en las que se va a almacenar la info.
+  // user,password
+  string linea;
+  //getline(fin, linea);
+  
+  while (getline(fin, linea)) { // O(n)
+    // Username
+    
+    linea = linea.substr(0, linea.length());
+    string user = linea.substr(0, linea.find(","));
+    users.addLast(user);
 
-  for (int i = 0; i < users.size(); i++) {
-    for (int i = 0; i < pins.size(); i++) {
-      string tempUser= users.get(i);
-      string tempPin = pins.get(i);
+    // Password
 
-      if(tempUser == usuario && tempPin == password){
-        cout << "Bienvenido a Pizzeria Tricolore"<<endl;
+    linea = linea.substr(linea.find(",") + 1, linea.length());
+    string pin = linea.substr(0, linea.find(","));
+    pins.addLast(pin);
 
-      } else{
-        string newUser;
-        string newPin;
-        
-        cout << "Intentalo de nuevo.";
-        cout << "Usuario:";
-        cin >> newUser;
-        cout<<endl;
-        cout<<"Password:";
-        cin>>newPin;
-        cout<<endl;
+  }
+  fin.close();
+};
+string login(string documento, LinkedList<string> &users,
+             LinkedList<string> &pins) {
+  string usuario, password;
+  bool logged = false;
+  while (!logged) {
+    cout << "Ingresa tu usuario y contraseña" << endl;
+    cout << "Usuario: ";
+    cin >> usuario;
+    int userIndex = users.index(usuario);
+    cout<<"Username index: "<<userIndex<<endl;
+    cout << "Password: ";
+    cin >> password;
 
-        string logUsers = "usuarios.csv";
-        login(logUsers,newUser,newPin);
-        
-        
+    int pwordIndex = pins.index(password);
+    cout<<"Pword index: "<<pwordIndex<<endl;
+    
+    if (users.index(usuario)>0) {
+      if (pins.index(password)>0) {
+        if (userIndex == pwordIndex) {
+          cout << "Benvenuto! " << endl;
+          logged = true;
+        } else {
+          cout << "Contraseña incorrecta. Per favore intente de nuevo. "
+               << endl;
+        }
+      } else {
+        cout << "Usuario "<<usuario<< ", por favor intente de nuevo. " << endl;
       }
+    } else {
+      cout << "Usuario"<<usuario<< ", por favor intente de nuevo. " << endl;
     }
   }
-}
+  return usuario;
+};
 
 /* O(n^2) */
 void makeHash(LinkedList<Pizza> &pizzas, Hashtable<int, Pizza> &inventario,
@@ -141,13 +152,42 @@ void printInventory(Hashtable<int, Pizza> &inventario) {
   }
 }
 
-void makePedido(Carrito<Pizza> &carrito, Hashtable<int, Pizza> &inventario, int id) {
+void makePedido(Carrito<Pizza> &carrito, Hashtable<int, Pizza> &inventario,
+                int id) {
   Pizza pizzaSelect = inventario.get(id);
   carrito.addProducto(pizzaSelect);
-  cout<<"Su pedido es: "<<pizzaSelect<<endl;
+  cout << "Su pedido es: " << pizzaSelect << endl;
+}
+
+void pausar() {
+  string pause;
+  cout << " <...> Ingrese cualquier valor para continuar. ";
+  cin >> pause;
+}
+void makeTicket(Carrito<Pizza> &carrito, string username) {
+  int total = carrito.pagar(username);
+  string filename = username + '_' + to_string(time(0)) + ".txt";
+  ofstream ticket(filename);
+
+  ticket << "<<<<<<<<<<<<<<<< PIZZERIA TRICOLORE >>>>>>>>>>>>>>>>>\n";
+  ticket << "~ - ~ - ~ - ~ - ~ - Grazie Mille! - ~ - ~ - ~ - ~ - ~\n";
+  ticket<<"-----------------------------------------------------"<< "\n";
+  ticket<<">> Usuario: "<<username<<endl;
+  time_t now = time(0);
+  char *dt = ctime(&now);
+  ticket << "Date: " << dt;
+  ticket<<"-----------------------------------------------------"<< "\n";
+  LinkedList<Pizza> pedidos = carrito.getProducts();
+  for (int i = 0; i < pedidos.size(); i++) {
+    ticket << pedidos.get(i) << "\n";
+  }
+  ticket<<"-----------------------------------------------------"<< "\n";
+  ticket << "Total: $" << total;
+  ticket.close();
 }
 
 int main(int argc, char **argv) {
+
   // Default value of string archivo = "pizzaDB.csv"
   string archivo = _ARCHIVO_;
   string logUsers = _USERS_;
@@ -160,18 +200,12 @@ int main(int argc, char **argv) {
   cout << " - - Ciao e Benvenuti nella sua Pizzeria TRICOLORE - -" << endl;
   cout << "------------------------------------------------------------------"
        << endl;
+  LinkedList<string> users;
+  LinkedList<string> pins;
+  readUsers(logUsers, users, pins);
 
-  cout << "Ingresa tu usuario y contraseña"<<endl;
   string usuario;
-  string password;
-
-  cout<<"Usuario: ";
-  cin>>usuario;
-  cout<<endl;
-  cout<<"Password: ";
-  cout<<endl;
-
-  login
+  usuario = login(logUsers, users, pins);
 
   // Lista base de pizzas
   LinkedList<Pizza> pizzas;
@@ -179,17 +213,25 @@ int main(int argc, char **argv) {
   // Hashtable base de inventario
   Hashtable<int, Pizza> hashT(pizzas.size());
 
-  cout << "- - - HASH TABLE - - -" << endl;
-  cin >> start;
-  cout << endl;
+  Carrito<Pizza> compras;
+  pausar();
+  cout << endl << "- - - IL NOSTRO MENÙ - - -" << endl;
   makeHash(pizzas, hashT, archivo);
-  printInventory(hashT);
-  
-  int opcion;
-  while (opcion !=-1){
-    cin>>opcion;
-    if ()
+
+  int opcion = 0;
+  while (opcion != -1) {
+    printInventory(hashT);
+    cout << "^^^ Questo é il nostro menù ^^^" << endl;
+    cout << "<?> Ingrese ID de la pizza a ordenar" << endl;
+    cin >> opcion;
+    if (opcion == -1) {
+      break;
+    }
+    compras.addProducto(hashT.get(opcion));
+    pausar();
   }
+
+  makeTicket(compras, usuario);
   cout << "------------------------------------------------------------------"
        << endl;
   cout << " - - Grazie mille per aver utilizzato i nostri servizi :) - -"

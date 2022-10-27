@@ -1,0 +1,13 @@
+<<<<<<<<<<<<<<<< PIZZERIA TRICOLORE >>>>>>>>>>>>>>>>>
+~ - ~ - ~ - ~ - ~ - Grazie Mille! - ~ - ~ - ~ - ~ - ~
+-----------------------------------------------------
+>> Usuario: admin
+Date: Thu Oct 27 01:31:08 2022
+-----------------------------------------------------
+1 || Pepperoni Chica: $80 con Refresco
+4 || Havaiana Chica: $75 con Refresco
+2 || Pepperoni Mediana: $120 con Papas+Refresco
+2 || Pepperoni Mediana: $120 con Papas+Refresco
+1 || Pepperoni Chica: $80 con Refresco
+-----------------------------------------------------
+Total: $475

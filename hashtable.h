@@ -15,7 +15,7 @@ private:
   LinkedList<HashPair<K, T> *> *tabla;
   /* O(i) */
   int fh(K key) const {
-    int position = key % size;
+    int position = (key-1) % size;
 
     return position;
   }

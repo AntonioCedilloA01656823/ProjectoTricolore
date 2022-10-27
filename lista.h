@@ -100,6 +100,23 @@ public:
     return exists;
   }
 
+  int index(T data) {
+    if(!contains(data)){
+      return -1;
+    }
+    Node<T> *temp = head;
+    bool exists = 0;
+    int index = -1;
+    do {
+      if (data == temp->data) {
+        exists = 1;
+      }
+      temp = temp->next;
+      index++;
+    } while (temp != NULL && exists == 0);
+    return index;
+  }
+
   /*
   Método para obtener un elemento que se encuentra en una posición: "index".
   Si index es menor a 0 o mayor al tamaño se lanza exception.
